@@ -1,0 +1,58 @@
+/**
+ * Display placeholders
+ */
+%Display {
+
+	/**
+	 * Display block
+	 *
+	 * @uses @extend .Display-block
+	 */
+	&-block {
+		display: block;
+	}
+
+
+	/**
+	 * Display table
+	 */
+	&-table {
+		display: table;
+	}
+
+	/**
+	 * Display table cell
+	 */
+	&-table-cell {
+		display: table-cell;
+	}
+}
+
+
+/**
+ * Position placeholders
+ */
+%Position {
+
+	/**
+	 * Relative position
+	 */
+	&-relative {
+		position: relative;
+	}
+	
+	/**
+	 * Absolute position
+	 */
+	&-absolute {
+		position: absolute;
+
+		&-center {
+			position: absolute;
+			top: 0;
+			right: 0;
+			bottom: 0;
+			left: 0;
+		}
+	}
+}

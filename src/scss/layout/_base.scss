@@ -1,0 +1,12 @@
+.l {
+	/**
+	 * Container
+	 */
+	&-container {
+		padding-right: $grid-outer-gutter-width;
+		padding-left: $grid-outer-gutter-width;
+		margin: 0 auto;
+		position: relative;
+		max-width: 1198px;
+	}
+}

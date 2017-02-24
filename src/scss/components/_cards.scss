@@ -1,0 +1,54 @@
+/**
+ * Card
+ */
+.Card {
+	@extend %Position-relative;
+	
+	font-size: 2em;
+	overflow: hidden;
+
+	@for $i from 1 through 12 {
+
+	  	&:nth-child( #{ $i } ) {
+
+	     	background: rgb( $i * 15, $i * 15, $i * 15 );
+	  	}
+	}
+
+
+	&::after {
+		@extend %Display-block;
+		padding-bottom: 100%;
+		content: '';
+	}
+	
+	/**
+	 * Content
+	 *
+	 * @uses .Card__content
+	 */
+	&__content {
+		
+		@extend %Position-absolute-center;
+
+		transition: transform .3s ease;
+
+		&:hover {
+			transform: translate3d(0, 0, 0);
+		}
+		
+		
+		&.next {
+
+			transform: translate3d(-100%, 0, 0);
+
+		}
+
+		&.current {
+			transform: translate3d( 0, 0, 0 );
+
+		}
+
+
+	}
+}

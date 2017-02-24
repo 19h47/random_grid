@@ -1,0 +1,35 @@
+{
+  "name": "random_grid",
+  "version": "1.0.0",
+  "description": "Random grid generator",
+  "main": "index.js",
+  "scripts": {
+    "build-js": "browserify src/js/main.js > dist/js/bundle.js",
+    "watch-js": "watchify src/js/main.js -o dist/js/bundle.js -v",
+    "build-css": "node-sass --output-style compressed src/scss/main.scss dist/css/global.css",
+    "watch-css": "nodemon -e scss -x \"npm run build-css\"",
+    "build": "npm run build-js & npm run build-css",
+    "watch": "npm run watch-js & npm run watch-css",
+    "start": "npm run watch"
+  },
+  "author": "Jérémy Levron jeremy@poigneedemainvirile.com",
+  "license": "ISC",
+  "devDependencies": {
+    "browserify": "^14.1.0",
+    "browserify-shim": "^3.8.13",
+    "node-sass": "^4.5.0",
+    "nodemon": "^1.11.0",
+    "watchify": "^3.9.0"
+  },
+  "browserify": {
+    "transform": [
+      "browserify-shim"
+    ]
+  },
+  "browserify-shim": {
+    "jquery": "global:$"
+  },
+  "dependencies": {
+    "bootstrap-sass": "^3.3.7"
+  }
+}

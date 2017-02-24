@@ -1,0 +1,9 @@
+
+/**
+ * Outer gutter width
+ *
+ * (Most of the time it's the size of a gutter divide by 2.)
+ * Useful for the container.
+ */
+$grid-outer-gutter-width-unitless: 20;
+$grid-outer-gutter-width: $grid-outer-gutter-width-unitless * 1px;
