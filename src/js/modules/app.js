@@ -24,6 +24,8 @@ App.prototype = {
 	initModules: function() {
 		console.info('App.initModules');
 
-		new Grid('.js-grid');
+		new Grid('.js-grid', {
+			datas: logos,
+		});
 	}
 };

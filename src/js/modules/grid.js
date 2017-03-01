@@ -1,219 +1,267 @@
 module.exports = Grid;
 
 var $ = require('jquery');
+var fn = require('../functions.js');
+
 
 
 /**
  * Grid
  */
-function Grid(element) {
+function Grid(element, options) {
  	if (!(this instanceof Grid)) {
         return new Grid();
     }
 
+    // If element doesn't exist, return
     if (!element || !element.length) {
     	return;
     }
 
-    this.element = document.querySelector(element);
+    this.element = element;
+    this.$element = $(this.element);
 
-    this.array = [].slice.call(this.element.querySelectorAll('.Card'));
-    
-    // Setup Grid
+    this.defaults = {
+    	itemNumber: 6,
+    	innerElement: '.js-clients-card'
+    };
+
+    this.options = $.extend({}, this.defaults, options);
+
+    this.datas = this.options.datas;
+    this.itemNumber = this.options.itemNumber;
+    this.innerElement = this.options.innerElement;
+
+    // Number of tile to display in Clients
+  	this.urls;
+
+  	this.arrayUrls = [];
+  	this.currentDatasList = [];
+  	this.waitingDatasList = [];
+
+  	// Lottery values
+  	this.lotteryValues = [];
+  	this.currentValue;
+
+  	// Start to -1 to be increment instantly to 0 on init
+  	this.currentIndex = -1;
+
+  	// RequestAnimationFrame vars
+  	this.lastTimestamp = 0;
+  	this.interval = 3000;
+  	this.init = true;
+
+    // Clients.setup 
     this.setup();
 }
 
 
-/**
- * Grid
- */
 Grid.prototype = {
 	
 	/**
 	 * Grid.setup
 	 */
 	setup: function() {
-		console.info('Grid.setup');
+		// console.info('Grid.setup');
 
 		var _this = this;
 
-		// First, we shuffle the array
-		this.shuffle(this.array);
+		// Shuffle array of urls
+		this.shuffle(this.datas);
+
+		// construct the current array
+		this.constructCurrentArrayList(this.currentDatasList, this.datas, this.itemNumber);
 		
-		// Next we construct the grid
-		this.init(this.element, this.array);
+		// Select card
+		$content = this.$element.find('.js-card-content');
 
-		// And we load next tile
-		this.loadNext();
-		
-		// Usefull for raf
-		this.fps = .5;
-		this.now;
-		this.then = Date.now();
-		this.interval = 1000 / this.fps;
-		this.delta;
+		$content.each(function(i) {
 
-		this.rafId = requestAnimationFrame(this.draw.bind(this));
-		
-	},
+			var currentImg = $(this).find('img');
 
+			currentImg.attr('src', _this.currentDatasList[i]['url']);
+			currentImg.attr('height', _this.currentDatasList[i]['height']);
+			currentImg.attr('width', _this.currentDatasList[i]['width']);
 
-	/**
-	 * Grid.init
-	 *
-	 * @param DOM element
-	 * @param array  	
-	 */
-	init: function(element, array) {
-		console.info('Grid.init');
+			// Clone this element, add the `next` class and add it next to him
+			$(this).clone().addClass('next').insertAfter($(this));
 
-		// Empty output var
-		var output = '';
-
-		// For element in array
-		array.forEach(function(entry){
-
-			entry.firstElementChild.classList.add('current');
-
-			output += '<div class="col-xs-4 Card">' + entry.innerHTML + '</div>';
+			// After cloning, add `current` class to the element
+			$(this).addClass('current');
 
 		});
 
-		return element.firstElementChild.innerHTML = output;
-	},
-
-
-	/**
-	 * Grid.loadNext
-	 */
-	loadNext: function() {
-		console.info('Grid.loadNext');
-
-		var _this = this;
-		
-
-		var elements = [].slice.call(this.element.querySelectorAll('.Card'));
-		// console.log(this.array[0]);
-		
-		var i = 0;
-		elements.forEach(function(element) {
-
-			_this.array[i].firstElementChild.classList.remove('current');
-			_this.array[i].firstElementChild.classList.add('next');
-
-			elements[i].innerHTML += _this.array[i].innerHTML;
-
-			// console.dir(_this.array[i]);
-
-			i++;
-		});
-	},
-
-
-	/**
-	 * Grid.draw
-	 *
-	 * @see  http://codetheory.in/controlling-the-frame-rate-with-requestanimationframe/
-	 */
-	draw: function(timestamp) {
-		// console.info('Grid.info');
-
-		this.now = Date.now();
-	    this.delta = this.now - this.then;
-	     
-	    if ( this.delta > this.interval) {
-	        
-	        this.then = this.now - ( this.delta % this.interval );
-	         
-	        console.info('Grid.draw');
-
-	        this.incrementArray(this.array);
-	        this.destroy($('.current'));
-	        this.toggleClass($('.next'), 'next', 'current');
-	        this.loadNext();
-
-	        this.fps = this.randomNumber(.1, 1);
-	        console.log(this.fps);
-	    } 
-	    this.rafId = requestAnimationFrame(this.draw.bind(this));   
-	},
-
-
-	/**
-	 * Grid.destroy
-	 *
-	 * @see  http://stackoverflow.com/a/10842519/5091221
-	 */
-	destroy: function(elementCurrent) {
-
-		return elementCurrent.remove();
-	},
-
-
-	/**
-	 * Grid.addClass
-	 *
-	 * @see  http://stackoverflow.com/a/10842519/5091221
-	 */
-	toggleClass: function(element, classRemove, classAdd) {
-
-		element.removeClass(classRemove);
-		element.addClass(classAdd);
-	},
-
-
-	/**
-	 * Grid.getLength
-	 * 
-	 * @param  	element
-	 * @return 	length  	length of given element
-	 * @see  	http://stackoverflow.com/a/767492/5091221
-	 */
-	getLength: function(element) {
-
-		// Test if `element is actually an Array, if not, return
-		if(!Array.isArray(element)) {
-			console.error('element is not an array');
-
+		// If there is at least as many datas as number, no need to continue
+		if (this.datas.length === this.itemNumber) {
 			return;
 		}
 
-		return this.length = element.length;
+		// Construct waiting urls array
+		this.constructWaitingList(this.waitingDatasList, this.datas, this.itemNumber);
+
+		// Construct pattern values array
+		this.constructLotteryValues(this.lotteryValues, this.itemNumber);
+
+		// Shuffle pattern values array
+		this.shuffle(this.lotteryValues);
+
+		// Set current value to the first entry of pattern values array
+		this.currentValue = this.lotteryValues[0];
+
+		// Set current index to 0
+		this.currentIndex = 0;
+
+		// request animation frame
+		this.render();
+
+		this.initEvents();
 	},
 
 
 	/**
-	 * Grid.incrementArray
+	 * Grid.initEvents
+	 */
+	initEvents: function() {
+		// console.initEvents
+		
+		$(document)
+			.on('keydown.clients', $.proxy(function(e) {
+				
+				// Right key
+				e.which === 39 && this.update();
+
+				// Delete key
+				e.which === 46 && console.clear();
+
+			}, this));
+
+	},
+
+
+	/**
+	 * Grid.constructCurrentArrayList
 	 *
-	 * Pass the first key of a given array in last position
+	 * @param 	currentArrayList	current array list
+	 * @param  	array 				array origin
+	 * @param 	number				number of element to stock in `currentArrayList`
+	 */
+	constructCurrentArrayList: function(currentArrayList, array, number) {
+		// console.info('Grid.constructCurrentArrayList');
+
+		for (var i = 0; i < number; i++) {
+		    	
+	    	currentArrayList.push(array[i]);	  
+		}
+	},
+
+
+	/**
+	 * GridGrid.constructLotteryValues
 	 *
 	 * @param 	array
-	 * @return 	array
+	 * @param 	number
 	 */
-	incrementArray: function(array) {
-		
-		return array.push( array.shift());
+	constructLotteryValues: function(array, number) {
+		// console.info('Gird.constructLotteryValues');
+
+		for (var i = 1; i <= number; i++) {
+			
+			array.push(i);
+		}
 	},
-	
+
 
 	/**
-	 * Grid.randomNumber
+	 * GridGrid.constructWaitingList
 	 *
-	 * Return a number between min and max
-	 * 
-	 * @param 	min 	The start number
-	 * @param 	max		The number of possible results ( 1 + start(6) - end(1) )
-	 * @return 	number
-	 * @see 	http://stackoverflow.com/a/4960020/5091221
+	 * @param 	waitingList
+	 * @param 	array
+	 * @param 	number
 	 */
-	randomNumber: function(min, max) {
-		
-		return Math.random() * max + min; 
+	constructWaitingList: function(waitingList, array, number) {
+		// console.info('GridGrid.constructWaitingList');
+
+		for (var i = number; i < array.length; i++) {
+
+			waitingList.push(array[i]);
+		}
 	},
 
 
 	/**
-	 * Grid.shuffle
+	 * GridGrid.update
+	 */
+	update: function() {
+		// console.log('GridGrid.update');
+		
+		// Increment currentIndex
+		this.currentIndex += 1;
+
+		// On first init, the current index is egal to 0
+		if(this.init) {
+			this.init = false;
+			this.currentIndex = 0;	
+		}
+
+		// If index is strictly egal to item number, reset current index
+		if( this.currentIndex == this.itemNumber ) {
+
+			this.currentIndex = 0;
+		}
+
+		// Update all arrays
+		this.waitingDatasList.push(this.currentDatasList[this.currentIndex]);
+		this.currentDatasList[this.currentIndex] = this.waitingDatasList[0];
+		this.waitingDatasList.shift(0);
+
+		// Current Value
+		this.currentValue = this.lotteryValues[this.currentIndex];
+		
+		// Select current element
+		var currentElement = this.$element.find(this.innerElement).eq(this.currentValue - 1)
+		var $current = currentElement.find('.current');
+
+		// Select current next
+		var $next = currentElement.find('.next');
+		var $nextImg = $next.find('img');
+
+		// Update img src, height, and width attribute
+		$nextImg.attr('width', this.waitingDatasList[0]['width'] + 'px');
+		$nextImg.attr('height', this.waitingDatasList[0]['height'] + 'px');
+		$nextImg.attr('src', this.waitingDatasList[0]['url']);
+		
+		// When current finished his transition
+		$current.one('transitionend', function() {
+
+			$(this).removeClass('previous is-animating').addClass('next');
+			
+		});
+
+		// When current next finished his transition
+		$next.one('transitionend', function() {
+
+			$(this).removeClass('is-animating');
+			
+		});
+
+		$next.removeClass('next').addClass('current is-animating');
+		$current.removeClass('current').addClass('previous is-animating');
+
+		console.group('Current');
+		console.log(this.lotteryValues);
+		console.log('currentIndex - ' + this.currentIndex);
+		console.log('currentValue - ' + this.currentValue);
+		console.log('currentDatasList[\'url\'] - ' + this.currentDatasList[this.currentIndex]['url']);
+		console.log('waitingDatasList[\'url\'] - ' + this.waitingDatasList[0]['url']);
+		console.log(this.currentDatasList);
+		console.log(this.waitingDatasList);
+		console.groupEnd();	
+
+	},
+
+
+	/**
+	 * GridGrid.shuffle
 	 *
 	 * Random Shuffling An Array the Fisher-Yates way
 	 *
@@ -222,7 +270,8 @@ Grid.prototype = {
 	 * @see  	http://www.itsmycodeblog.com/shuffling-a-javascript-array/
 	 * @see 	https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle
 	 */
-	shuffle: function(array) {	
+	shuffle: function(array) {
+		// console.info('Clients.shuffle');
 
 	  	var currentIndex = array.length, temporaryValue, randomIndex ;
 
@@ -240,5 +289,25 @@ Grid.prototype = {
 	  	}
 
 	  	return array;
+	},
+
+
+	/**
+	 * Grid.render
+	 *
+	 * Request animation frame
+	 * 
+	 * @param 	timestamp
+	 */
+	render: function(timestamp) {
+	    if (timestamp > this.lastTimestamp + this.interval ) {
+        	// console.log('Grid.render');
+
+        	this.lastTimestamp = timestamp;
+
+        	this.update();
+	    }
+
+    	this.rafId = requestAnimationFrame(this.render.bind(this));   
 	}
-}
+};

@@ -10,8 +10,13 @@
 	@for $i from 1 through 12 {
 
 	  	&:nth-child( #{ $i } ) {
+			
+			background: rgb( $i * 15, $i * 15, $i * 15 );
+			
+			.Card__content {
 
-	     	background: rgb( $i * 15, $i * 15, $i * 15 );
+	     		background: rgb( $i * 15, $i * 15, $i * 15 );
+			}
 	  	}
 	}
 
@@ -21,6 +26,19 @@
 		padding-bottom: 100%;
 		content: '';
 	}
+
+
+	/**
+	 * Image
+	 *
+	 * @uses .Card__img
+	 */
+	&__img {
+		max-width: 80%;
+		max-height: 200px;
+		height: auto;
+	}
+
 	
 	/**
 	 * Content
@@ -30,25 +48,67 @@
 	&__content {
 		
 		@extend %Position-absolute-center;
-
-		transition: transform .3s ease;
+		
 
 		&:hover {
 			transform: translate3d(0, 0, 0);
 		}
+	}	
+
+	&__inner {
+
+
+		/**
+		 * Img
+		 *
+		 * @uses .Card__inner img
+		 */
+		img {
+    		max-width: 85px;
+    		height: auto;
+		}
+
+		/**
+		 * Is animating state
+		 *
+		 * @uses .Card__content.is-animating
+		 */
+		&.is-animating {
+			transition: transform .3s ease;
+		}
 		
 		
+		/**
+		 * Next state
+		 *
+		 * @uses .Card__content.next
+		 */
 		&.next {
 
 			transform: translate3d(-100%, 0, 0);
 
 		}
 
+		
+		/**
+		 * Previous state
+		 *
+		 * @uses .Card__content.previous
+		 */
+		&.previous {
+
+			transform: translate3d(100%, 0, 0);
+		}
+		
+
+		/**
+		 * Current state
+		 *
+		 * @uses .Card__content.current
+		 */
 		&.current {
 			transform: translate3d( 0, 0, 0 );
 
 		}
-
-
 	}
 }
