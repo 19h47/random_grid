@@ -10,30 +10,30 @@ var fn = require('../functions.js');
  */
 function Grid(element, options) {
  	if (!(this instanceof Grid)) {
-        return new Grid();
-    }
+        	return new Grid();
+    	}
 
-    // If element doesn't exist, return
-    if (!element || !element.length) {
-    	return;
-    }
+    	// If element doesn't exist, return
+   	if (!element || !element.length) {
+    		return;
+    	}
 
-    this.element = element;
-    this.$element = $(this.element);
+    	this.element = element;
+    	this.$element = $(this.element);
 
-    this.defaults = {
-    	itemNumber: 6,
-    	innerElement: '.js-clients-card'
-    };
+    	this.defaults = {
+		// Number of tile to display
+    		itemNumber: 6,
+    		innerElement: '.js-clients-card'
+    	};
 
-    this.options = $.extend({}, this.defaults, options);
+    	this.options = $.extend({}, this.defaults, options);
 
-    this.datas = this.options.datas;
-    this.itemNumber = this.options.itemNumber;
-    this.innerElement = this.options.innerElement;
+	this.datas = this.options.datas;
+    	this.itemNumber = this.options.itemNumber;
+    	this.innerElement = this.options.innerElement;
 
-    // Number of tile to display in Clients
-  	this.urls;
+	this.urls;
 
   	this.arrayUrls = [];
   	this.currentDatasList = [];
@@ -41,7 +41,7 @@ function Grid(element, options) {
 
   	// Lottery values
   	this.lotteryValues = [];
-  	this.currentValue;
+  	this.currentLotteryValue;
 
   	// Start to -1 to be increment instantly to 0 on init
   	this.currentIndex = -1;
@@ -51,8 +51,8 @@ function Grid(element, options) {
   	this.interval = 3000;
   	this.init = true;
 
-    // Clients.setup 
-    this.setup();
+    	// Clients.setup 
+    	this.setup();
 }
 
 
@@ -74,7 +74,8 @@ Grid.prototype = {
 		
 		// Select card
 		$content = this.$element.find('.js-card-content');
-
+		
+		// Construct grid
 		$content.each(function(i) {
 
 			var currentImg = $(this).find('img');
@@ -99,14 +100,14 @@ Grid.prototype = {
 		// Construct waiting urls array
 		this.constructWaitingList(this.waitingDatasList, this.datas, this.itemNumber);
 
-		// Construct pattern values array
+		// Construct lottery values array
 		this.constructLotteryValues(this.lotteryValues, this.itemNumber);
 
-		// Shuffle pattern values array
+		// Shuffle lottery values array
 		this.shuffle(this.lotteryValues);
 
-		// Set current value to the first entry of pattern values array
-		this.currentValue = this.lotteryValues[0];
+		// Set current value to the first entry of lottery values array
+		this.currentLotteryValue = this.lotteryValues[0];
 
 		// Set current index to 0
 		this.currentIndex = 0;
@@ -141,6 +142,8 @@ Grid.prototype = {
 	/**
 	 * Grid.constructCurrentArrayList
 	 *
+	 * Construct the current array list of n element
+	 *
 	 * @param 	currentArrayList	current array list
 	 * @param  	array 				array origin
 	 * @param 	number				number of element to stock in `currentArrayList`
@@ -150,7 +153,7 @@ Grid.prototype = {
 
 		for (var i = 0; i < number; i++) {
 		    	
-	    	currentArrayList.push(array[i]);	  
+	    		currentArrayList.push(array[i]);	  
 		}
 	},
 
@@ -214,11 +217,11 @@ Grid.prototype = {
 		this.currentDatasList[this.currentIndex] = this.waitingDatasList[0];
 		this.waitingDatasList.shift(0);
 
-		// Current Value
-		this.currentValue = this.lotteryValues[this.currentIndex];
+		// Current lottery value
+		this.currentLotteryValue = this.lotteryValues[this.currentIndex];
 		
 		// Select current element
-		var currentElement = this.$element.find(this.innerElement).eq(this.currentValue - 1)
+		var currentElement = this.$element.find(this.innerElement).eq(this.currentLotteryValue - 1)
 		var $current = currentElement.find('.current');
 
 		// Select current next
@@ -250,7 +253,7 @@ Grid.prototype = {
 		console.group('Current');
 		console.log(this.lotteryValues);
 		console.log('currentIndex - ' + this.currentIndex);
-		console.log('currentValue - ' + this.currentValue);
+		console.log('currentLotteryValue - ' + this.currentLotteryValue);
 		console.log('currentDatasList[\'url\'] - ' + this.currentDatasList[this.currentIndex]['url']);
 		console.log('waitingDatasList[\'url\'] - ' + this.waitingDatasList[0]['url']);
 		console.log(this.currentDatasList);
